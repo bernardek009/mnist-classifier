@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: mnist_db
+    environment:
+      POSTGRES_USER: mnist_user
+      POSTGRES_PASSWORD: mnist_pass
+      POSTGRES_DB: mnist_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  streamlit:
+    build:
+      context: ./streamlit_app
+    container_name: mnist_streamlit
+    depends_on:
+      - db
+    ports:
+      - "8501:8501"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mnist_db
+      POSTGRES_USER: mnist_user
+      POSTGRES_PASSWORD: mnist_pass
+      MODEL_PATH: /app/model.pkl
+    volumes:
+      - ./model/model.pkl:/app/model.pkl:ro
+
+volumes:
+  postgres_data:
